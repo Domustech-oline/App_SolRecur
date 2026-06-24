@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#003d82">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="O">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+
+:root{
+  --blue-deep:#003d82;
+  --blue-mid:#0057b8;
+  --blue-light:#1a6fd4;
+  --blue-pale:#e8f0fb;
+  --green:#1a7a4a;
+  --green-light:#e8f5ee;
+  --amber:#c47a00;
+  --amber-light:#fff8e6;
+  --red:#b52b2b;
+  --red-light:#fdecea;
+  --surface:#f2f5fb;
+  --card:#ffffff;
+  --border:#dce3ef;
+  --text-primary:#1a2740;
+  --text-secondary:#4a5870;
+  --text-muted:#8896af;
+}
+
+body{background:var(--surface);min-height:100vh;}
+
+/* ── TELA HOME ── */
+#screen-home{
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;padding:0 0 40px;
+}
+
+.home-header{
+  width:100%;background:var(--blue-deep);padding:32px 24px 28px;
+  text-align:center;position:relative;overflow:hidden;
+}
+.home-header::after{
+  content:'';position:absolute;bottom:-24px;left:0;right:0;
+  height:48px;background:var(--surface);border-radius:50% 50% 0 0/100% 100% 0 0;
+}
+.home-logo{
+  width:68px;height:68px;background:white;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;box-shadow:0 4px 18px rgba(0,0,0,.18);
+}
+.home-logo img{width:42px;height:42px;object-fit: contain;border-radius: 8px;}
+.home-header h1{
+  color:white;font-size:20px;font-weight:700;letter-spacing:.3px;
+}
+.home-header p{color:rgba(255,255,255,.72);font-size:13px;margin-top:4px;}
+
+.home-cards{
+  width:100%;max-width:480px;padding:48px 20px 0;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+.app-card{
+  background:var(--card);border-radius:16px;
+  box-shadow:0 2px 12px rgba(0,61,130,.10);
+  border:1px solid var(--border);
+  padding:22px 20px;cursor:pointer;
+  display:flex;align-items:center;gap:16px;
+  transition:box-shadow .18s,transform .18s;
+  text-decoration:none;
+}
+.app-card:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,61,130,.10);}
+
+.app-card-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+}
+.icon-chi{background:var(--blue-pale);}
+.icon-recurso{background:var(--green-light);}
+
+.app-card-info{flex:1;min-width:0;}
+.app-card-info h3{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.app-card-info p{font-size:12px;color:var(--text-secondary);line-height:1.4;}
+.app-card-arrow{color:var(--text-muted);font-size:22px;line-height:1;}
+
+.home-footer{
+  margin-top:40px;text-align:center;
+  font-size:11px;color:var(--text-muted);padding:0 20px;
+}
+
+/* ── TELAS INTERNAS ── */
+.screen{display:none;flex-direction:column;min-height:100vh;}
+.screen.active{display:flex;}
+
+.top-bar{
+  background:var(--blue-deep);color:white;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:10;
+}
+.btn-back{
+  background:rgba(255,255,255,.15);border:none;color:white;
+  border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;
+  flex-shrink:0;
+}
+.btn-back:active{background:rgba(255,255,255,.25);}
+.top-bar-title{font-size:15px;font-weight:700;flex:1;}
+.top-bar-sub{font-size:11px;color:rgba(255,255,255,.68);margin-top:1px;}
+
+.screen-body{
+  flex:1;padding:14px;overflow-y:auto;
+  max-width:480px;width:100%;margin:0 auto;
+  padding-bottom:40px;
+}
+
+/* ── COMPONENTES COMPARTILHADOS ── */
+.card{
+  background:var(--card);padding:16px;border-radius:12px;
+  margin-bottom:12px;box-shadow:0 1px 6px rgba(0,61,130,.08);
+  border:1px solid var(--border);
+}
+.card h3{margin-bottom:10px;color:var(--blue-deep);font-size:14px;font-weight:700;}
+
+label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:10px;margin-bottom:4px;}
+input,select,textarea{
+  width:100%;padding:10px 12px;margin-bottom:4px;
+  border:1px solid var(--border);border-radius:8px;
+  font-size:14px;color:var(--text-primary);
+  background:var(--surface);transition:border-color .15s;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--blue-light);background:white;
+}
+small{font-size:11px;color:var(--text-muted);}
+
+button{
+  border:none;padding:11px 14px;border-radius:8px;
+  cursor:pointer;font-size:13px;font-weight:600;
+  transition:opacity .15s;
+}
+button:active{opacity:.82;}
+
+.btn-primary{background:var(--blue-mid);color:white;}
+.btn-success{background:var(--green);color:white;}
+.btn-danger{background:var(--red);color:white;}
+.btn-warning{background:var(--amber);color:white;}
+.btn-whatsapp{background:#25D366;color:white;}
+
+/* ── KPIs ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.kpi{
+  background:var(--card);padding:14px 12px;border-radius:12px;
+  text-align:center;box-shadow:0 1px 6px rgba(0,61,130,.08);
+  border:1px solid var(--border);
+}
+.kpi h2{font-size:22px;font-weight:700;color:var(--blue-deep);}
+.kpi p{font-size:11px;color:var(--text-secondary);margin-top:3px;}
+
+/* ── AÇÕES GRID ── */
+.acoes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.acoes-grid button{margin:0;width:100%;}
+
+/* ── OC CARD ── */
+.oc-card{border:1px solid var(--border);border-radius:10px;margin-top:10px;background:var(--card);overflow:hidden;}
+.oc-resumo{display:flex;align-items:center;justify-content:space-between;padding:12px;gap:10px;cursor:pointer;}
+.oc-resumo-info{display:flex;flex-direction:column;flex:1;min-width:0;}
+.oc-resumo-titulo{font-weight:700;color:var(--blue-deep);font-size:13px;}
+.oc-resumo-sub{font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.oc-resumo-extra{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap;}
+.oc-resumo-chi{font-weight:700;font-size:13px;color:var(--green);}
+.oc-resumo-status{font-size:11px;color:var(--text-secondary);}
+.oc-resumo-seta{color:var(--text-muted);font-size:22px;line-height:1;}
+.oc-acoes{display:flex;gap:8px;padding:0 12px 12px;}
+.oc-acoes button{flex:1;width:auto;margin:0;font-size:12px;padding:8px;}
+
+/* ── PRÉVIA ── */
+.preview{
+  white-space:pre-wrap;background:var(--surface);padding:14px;
+  border-radius:8px;max-height:500px;overflow:auto;
+  font-size:12px;color:var(--text-primary);
+  border:1px solid var(--border);line-height:1.6;
+}
+
+/* ── MODAL EDIÇÃO ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:1000;
+  justify-content:center;align-items:flex-start;
+}
+.modal-screen{
+  background:var(--surface);width:100%;max-width:480px;
+  min-height:100%;display:flex;flex-direction:column;
+}
+.modal-header{
+  background:var(--blue-deep);color:white;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:1;
+}
+.modal-header h3{font-size:15px;font-weight:700;}
+.modal-voltar{
+  background:rgba(255,255,255,.15);color:white;border:none;
+  padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;
+}
+.modal-body{padding:15px;flex:1;}
+.modal-footer{
+  padding:14px 16px;display:flex;gap:10px;
+  background:var(--card);border-top:1px solid var(--border);
+  position:sticky;bottom:0;
+}
+.modal-footer button{flex:1;width:auto;margin:0;}
+
+/* ── APP RECURSO TÉCNICO ── */
+.result-box{
+  margin-top:12px;padding:14px;background:var(--surface);
+  border-radius:10px;white-space:pre-wrap;border:1px solid var(--border);
+  font-size:12px;color:var(--text-primary);line-height:1.6;
+}
+
+@media(max-width:400px){
+  .acoes-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     TELA HOME
+════════════════════════════════ -->
+<div id="screen-home">
+
+  <div class="home-header">
+    <div class="home-logo">
+        <img src="logo.png" alt="Logo" />
+    </div>
+    <h1>MANUTENÇÃO · UTEP NORTE</h1>
+    <p>Neoenergia Pernambuco</p>
+  </div>
+
+  <div class="home-cards">
+
+    <div class="app-card" onclick="abrirTela('screen-chi')">
+      <div class="app-card-icon icon-chi">📊</div>
+      <div class="app-card-info">
+        <h3>Gestão CHI</h3>
+        <p>Controle de ocorrências e KPIs por UTD do Setor Norte</p>
+      </div>
+      <span class="app-card-arrow">›</span>
+    </div>
+
+    <div class="app-card" onclick="abrirTela('screen-recurso')">
+      <div class="app-card-icon icon-recurso">🛠️</div>
+      <div class="app-card-info">
+        <h3>Recurso Técnico</h3>
+        <p>Solicitação de recursos e geração de texto para WhatsApp</p>
+      </div>
+      <span class="app-card-arrow">›</span>
+    </div>
+
+  </div>
+
+  <div class="home-footer">Manutenção · UTEP Norte</div>
+
+</div>
+
+
+<!-- ════════════════════════════════
+     TELA CHI
+════════════════════════════════ -->
+<div id="screen-chi" class="screen">
+
+  <div class="top-bar">
+    <button class="btn-back" onclick="voltarHome()">← Início</button>
+    <div>
+      <div class="top-bar-title">Gestão CHI</div>
+      <div class="top-bar-sub">Setor Norte</div>
+    </div>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="card">
+      <label>Data</label>
+      <input type="date" id="data">
+      <label>Setor</label>
+      <input type="text" id="setor" value="Norte">
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><h2 id="kpiChi">0</h2><p>CHI Total</p></div>
+      <div class="kpi"><h2 id="kpiCriticas">0</h2><p>Ocorrências &gt; 500 CHI</p></div>
+      <div class="kpi"><h2 id="kpiOc">0</h2><p>Total de OCs</p></div>
+      <div class="kpi"><h2 id="kpiMaior">-</h2><p>Maior UTD</p></div>
+    </div>
+
+    <div id="utdsContainer"></div>
+
+    <div class="card">
+      <div class="acoes-grid">
+        <button class="btn-primary" onclick="gerarTexto()">📊 Atualizar Prévia</button>
+        <button class="btn-success" onclick="salvarDados()">💾 Salvar Dados</button>
+        <button class="btn-warning" onclick="exportarPDF()">📄 Exportar PDF</button>
+        <button class="btn-primary" onclick="copiarTexto()">📋 Copiar Texto</button>
+        <button class="btn-whatsapp" onclick="abrirWhatsapp()">📱 WhatsApp</button>
+        <button class="btn-danger" onclick="limparSistema()">🗑 Limpar Tudo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Prévia WhatsApp</h3>
+      <div id="preview" class="preview"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     TELA RECURSO TÉCNICO
+════════════════════════════════ -->
+<div id="screen-recurso" class="screen">
+
+  <div class="top-bar">
+    <button class="btn-back" onclick="voltarHome()">← Início</button>
+    <div>
+      <div class="top-bar-title">Recurso Técnico</div>
+      <div class="top-bar-sub">Manutenção UTEP Norte</div>
+    </div>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="card">
+      <label>🏢 UTD</label>
+      <select id="r_utd">
+        <option value=""></option>
+        <option>Carpina</option>
+        <option>Goiana</option>
+        <option>Camaragibe</option>
+        <option>Paulista</option>
+        <option>Timbaúba</option>
+      </select>
+
+      <label>📅 Data de Criação</label>
+      <input type="date" id="r_data">
+
+      <label>📄 Número da OC</label>
+      <input type="text" id="r_oc">
+
+      <label>📊 Status OC</label>
+      <select id="r_status">
+        <option value=""></option>
+        <option>Aberta</option>
+        <option>Fechada</option>
+        <option>Trabalhando</option>
+      </select>
+
+      <label>📝 Número CI</label>
+      <input type="text" id="r_ci">
+
+      <label>🚛 Recurso Solicitado</label>
+      <select id="r_recurso">
+        <option value=""></option>
+        <option>TP</option>
+        <option>TP+LV</option>
+        <option>TP+TPD</option>
+        <option>TP+RÇ</option>
+        <option>TP+TLEV</option>
+        <option>LV</option>
+      </select>
+
+      <label>⚠️ Tipo de Defeito</label>
+      <input type="text" id="r_defeito">
+
+      <label>🪪 Placa</label>
+      <input type="text" id="r_placa">
+
+      <label>🪪 Barramento</label>
+      <input type="text" id="r_barramento">
+
+      <label>✅ GLV</label>
+      <select id="r_glv">
+        <option value=""></option>
+        <option>Sim</option>
+        <option>Não</option>
+      </select>
+
+      <label>⚡ Alimentador</label>
+      <input type="text" id="r_alimentador">
+
+      <label>🏙️ Município</label>
+      <input type="text" id="r_municipio">
+
+      <label>📍 Latitude</label>
+      <input type="text" id="r_latitude">
+
+      <label>📍 Longitude</label>
+      <input type="text" id="r_longitude">
+
+      <label>🧾 Nº PES</label>
+      <input type="text" id="r_pes">
+
+      <label>📋 Nº SI</label>
+      <input type="text" id="r_si">
+
+      <label>🗒️ Observação</label>
+      <textarea id="r_obs" rows="3"></textarea>
+
+      <label>📦 Materiais Necessários</label>
+      <textarea id="r_materiais" rows="3"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="acoes-grid">
+        <button class="btn-primary" onclick="gerarTextoRecurso()">📄 Gerar Texto</button>
+        <button class="btn-success" onclick="copiarTextoRecurso()">📋 Copiar</button>
+        <button class="btn-whatsapp" style="grid-column:1/-1;" onclick="abrirWhatsAppRecurso()">💬 Enviar para WhatsApp</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Prévia</h3>
+      <div id="r_resultado" class="preview"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     MODAL EDIÇÃO OC (CHI)
+════════════════════════════════ -->
+<div id="modalEdicao" class="modal-overlay" onclick="fecharModalEdicaoSeFundo(event)">
+  <div class="modal-screen">
+    <div class="modal-header">
+      <button class="modal-voltar" onclick="fecharModalEdicao()">← Voltar</button>
+      <h3>Editar Ocorrência</h3>
+    </div>
+    <div class="modal-body">
+      <label>OC</label>
+      <input type="number" id="edit_oc" placeholder="9652">
+      <small>Formato: AAAA-MM-XXXX</small>
+      <label>CHI</label>
+      <input type="number" min="0" id="edit_chi">
+      <label>Motivo</label>
+      <input id="edit_motivo">
+      <label>Trecho</label>
+      <input id="edit_trecho">
+      <label>Detalhamento</label>
+      <textarea id="edit_detalhe" rows="4"></textarea>
+      <label>Status</label>
+      <select id="edit_status"></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-success" onclick="salvarEdicao()">💾 Salvar</button>
+      <button class="btn-danger" onclick="fecharModalEdicao()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ══════════════════════════════════════
+   NAVEGAÇÃO
+══════════════════════════════════════ */
+function abrirTela(id){
+  document.getElementById('screen-home').style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function voltarHome(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-home').style.display='flex';
+}
+
+/* ══════════════════════════════════════
+   APP CHI
+══════════════════════════════════════ */
+const UTDS=["Camaragibe","Carpina","Goiana","Paulista","Timbaúba"];
+const STATUS_CRISE=["🟢 Normal","🟡 Alerta","🟠 Nível 1","🔴 Nível 2","🚨 Nível 3"];
+const STATUS_OC=["🔧 Trabalhando","⏳ Em Espera","✅ Finalizada"];
+
+function iniciarSistema(){
+  const container=document.getElementById("utdsContainer");
+  UTDS.forEach(utd=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <h3>🏢 UTD ${utd}</h3>
+      <label>Status de Crise</label>
+      <select id="crise_${utd}">${STATUS_CRISE.map(i=>`<option>${i}</option>`).join("")}</select>
+      <button class="btn-success" style="width:100%;margin-top:8px;" onclick="adicionarOcorrencia('${utd}')">➕ Nova Ocorrência</button>
+      <div id="lista_${utd}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function adicionarOcorrencia(utd,dados={}){
+  const lista=document.getElementById(`lista_${utd}`);
+  const ano=new Date().getFullYear();
+  const mes=String(new Date().getMonth()+1).padStart(2,"0");
+  const id=Date.now()+Math.floor(Math.random()*1000);
+  const div=document.createElement("div");
+  div.className="oc-card";
+  div.dataset.id=id;
+  div.innerHTML=`
+    <div class="oc-resumo" onclick="abrirEdicao(this)">
+      <div class="oc-resumo-info">
+        <span class="oc-resumo-titulo">📌 OC ${ano}-${mes}-${dados.oc||'XXXX'}</span>
+        <span class="oc-resumo-sub">${dados.motivo||'Sem motivo informado'}</span>
+      </div>
+      <div class="oc-resumo-extra">
+        <span class="oc-resumo-chi">${dados.chi||0} CHI</span>
+        <span class="oc-resumo-status">${dados.status||STATUS_OC[0]}</span>
+      </div>
+      <span class="oc-resumo-seta">›</span>
+    </div>
+    <div class="oc-detail" style="display:none">
+      <input type="number" class="oc" value="${dados.oc||''}">
+      <input type="number" min="0" class="chi" value="${dados.chi||''}">
+      <input class="motivo" value="${dados.motivo||''}">
+      <input class="trecho" value="${dados.trecho||''}">
+      <textarea class="detalhe" rows="3">${dados.detalhe||''}</textarea>
+      <select class="status">${STATUS_OC.map(s=>`<option${dados.status===s?' selected':''}>${s}</option>`).join("")}</select>
+    </div>
+    <div class="oc-acoes">
+      <button class="btn-primary" onclick="abrirEdicao(this)">✏️ Editar</button>
+      <button class="btn-danger" onclick="removerOcorrencia(this)">🗑 Excluir</button>
+    </div>`;
+  lista.appendChild(div);
+  atualizarKPIs();
+  if(Object.keys(dados).length===0){salvarDados(false);abrirEdicao(div);}
+}
+
+function formatarOC(v){
+  const ano=new Date().getFullYear();
+  const mes=String(new Date().getMonth()+1).padStart(2,"0");
+  return `${ano}-${mes}-${v||'XXXX'}`;
+}
+
+function atualizarResumo(card){
+  card.querySelector(".oc-resumo-titulo").innerText=`📌 OC ${formatarOC(card.querySelector(".oc").value)}`;
+  card.querySelector(".oc-resumo-sub").innerText=card.querySelector(".motivo").value||"Sem motivo informado";
+  card.querySelector(".oc-resumo-chi").innerText=`${card.querySelector(".chi").value||0} CHI`;
+  card.querySelector(".oc-resumo-status").innerText=card.querySelector(".status").value;
+}
+
+let cardEmEdicao=null;
+function abrirEdicao(el){
+  const card=el.closest(".oc-card");
+  if(!card)return;
+  cardEmEdicao=card;
+  document.getElementById("edit_oc").value=card.querySelector(".oc").value;
+  document.getElementById("edit_chi").value=card.querySelector(".chi").value;
+  document.getElementById("edit_motivo").value=card.querySelector(".motivo").value;
+  document.getElementById("edit_trecho").value=card.querySelector(".trecho").value;
+  document.getElementById("edit_detalhe").value=card.querySelector(".detalhe").value;
+  document.getElementById("edit_status").value=card.querySelector(".status").value;
+  document.getElementById("modalEdicao").style.display="flex";
+}
+
+function salvarEdicao(){
+  if(!cardEmEdicao)return;
+  cardEmEdicao.querySelector(".oc").value=document.getElementById("edit_oc").value;
+  cardEmEdicao.querySelector(".chi").value=document.getElementById("edit_chi").value;
+  cardEmEdicao.querySelector(".motivo").value=document.getElementById("edit_motivo").value;
+  cardEmEdicao.querySelector(".trecho").value=document.getElementById("edit_trecho").value;
+  cardEmEdicao.querySelector(".detalhe").value=document.getElementById("edit_detalhe").value;
+  cardEmEdicao.querySelector(".status").value=document.getElementById("edit_status").value;
+  atualizarResumo(cardEmEdicao);
+  atualizarKPIs();
+  salvarDados(false);
+  fecharModalEdicao();
+}
+
+function fecharModalEdicao(){document.getElementById("modalEdicao").style.display="none";cardEmEdicao=null;}
+function fecharModalEdicaoSeFundo(e){if(e.target.id==="modalEdicao")fecharModalEdicao();}
+
+function popularStatusEdicao(){
+  document.getElementById("edit_status").innerHTML=STATUS_OC.map(s=>`<option>${s}</option>`).join("");
+}
+
+function removerOcorrencia(botao){
+  if(!confirm("Excluir ocorrência?"))return;
+  botao.closest(".oc-card").remove();
+  atualizarKPIs();
+  salvarDados(false);
+}
+
+function obterDados(){
+  const resultado={data:document.getElementById("data").value,setor:document.getElementById("setor").value,utds:{}};
+  UTDS.forEach(utd=>{
+    resultado.utds[utd]={crise:document.getElementById(`crise_${utd}`).value,ocorrencias:[]};
+    document.querySelectorAll(`#lista_${utd} .oc-card`).forEach(card=>{
+      resultado.utds[utd].ocorrencias.push({
+        oc:card.querySelector(".oc").value,
+        chi:Number(card.querySelector(".chi").value||0),
+        motivo:card.querySelector(".motivo").value,
+        trecho:card.querySelector(".trecho").value,
+        detalhe:card.querySelector(".detalhe").value,
+        status:card.querySelector(".status").value
+      });
+    });
+  });
+  return resultado;
+}
+
+function limparSistema(){
+  if(confirm("Apagar todos os dados?")){localStorage.removeItem("chiSistema");location.reload();}
+}
+
+function atualizarKPIs(){
+  const dados=obterDados();
+  let totalCHI=0,totalCriticas=0,totalOCs=0,maiorUTD="-",maiorCHI=0;
+  UTDS.forEach(utd=>{
+    let chiUTD=0;
+    dados.utds[utd].ocorrencias.forEach(oc=>{totalOCs++;chiUTD+=oc.chi;if(oc.chi>=500)totalCriticas++;});
+    totalCHI+=chiUTD;
+    if(chiUTD>maiorCHI){maiorCHI=chiUTD;maiorUTD=utd;}
+  });
+  document.getElementById("kpiChi").innerText=totalCHI;
+  document.getElementById("kpiCriticas").innerText=totalCriticas;
+  document.getElementById("kpiOc").innerText=totalOCs;
+  document.getElementById("kpiMaior").innerText=maiorUTD;
+}
+
+function salvarDados(mostrarMensagem=true){
+  localStorage.setItem("chiSistema",JSON.stringify(obterDados()));
+  if(mostrarMensagem)alert("Dados salvos com sucesso.");
+}
+
+function carregarDados(){
+  const dados=localStorage.getItem("chiSistema");
+  if(!dados)return;
+  const banco=JSON.parse(dados);
+  if(banco.data)document.getElementById("data").value=banco.data;
+  if(banco.setor)document.getElementById("setor").value=banco.setor;
+  UTDS.forEach(utd=>{
+    if(!banco.utds[utd])return;
+    document.getElementById(`crise_${utd}`).value=banco.utds[utd].crise;
+    banco.utds[utd].ocorrencias.forEach(oc=>adicionarOcorrencia(utd,oc));
+  });
+  atualizarKPIs();
+}
+
+function gerarTexto(){
+  const dados=obterDados();
+  let texto="",totalCHI=0,totalCriticas=0,ranking=[];
+  texto+=`🚨 DETALHAMENTO CHI ${dados.data}\n📍 SETOR ${dados.setor.toUpperCase()}\n\n`;
+  UTDS.forEach(utd=>{
+    let chiUTD=0;
+    dados.utds[utd].ocorrencias.forEach(oc=>{chiUTD+=oc.chi;if(oc.chi>=500)totalCriticas++;});
+    totalCHI+=chiUTD;ranking.push({utd,chi:chiUTD});
+  });
+  texto+=`📊 CHI TOTAL SETOR: ${totalCHI}\n🚨 OCORRÊNCIAS ACIMA DE 500 CHI: ${totalCriticas}\n\n📍 OCORRÊNCIAS CRÍTICAS POR UTD\n\n`;
+  UTDS.forEach(utd=>{
+    let qtd=0;dados.utds[utd].ocorrencias.forEach(oc=>{if(oc.chi>=500)qtd++;});
+    texto+=`${utd}: ${qtd}\n`;
+  });
+  texto+="\n";
+  UTDS.forEach(utd=>{
+    let chiUTD=0;dados.utds[utd].ocorrencias.forEach(oc=>{chiUTD+=oc.chi;});
+    const pct=totalCHI>0?((chiUTD/totalCHI)*100).toFixed(2):0;
+    texto+=`🏢 UTD ${utd}: ${chiUTD} CHI (${pct}%)\n\n`;
+    dados.utds[utd].ocorrencias.forEach(oc=>{
+      const ocF=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${oc.oc}`;
+      texto+=`📌 OC: ${ocF}\n⚡ CHI: ${oc.chi}\n📝 Motivo: ${oc.motivo}\n📍 Trecho: ${oc.trecho}\n📄 Detalhe: ${oc.detalhe}\n${oc.status}\n\n`;
+    });
+  });
+  ranking.sort((a,b)=>b.chi-a.chi);
+  texto+=`🏆 RANKING CHI\n\n`;
+  ranking.forEach((item,i)=>{texto+=`${i+1}º ${item.utd} - ${item.chi} CHI\n`;});
+  texto+=`\n🚨 STATUS DE CRISE\n\n`;
+  UTDS.forEach(utd=>{texto+=`${utd}: ${dados.utds[utd].crise}\n`;});
+  document.getElementById("preview").innerText=texto;
+  atualizarKPIs();
+}
+
+function copiarTexto(){
+  const texto=document.getElementById("preview").innerText;
+  if(!texto){alert("Primeiro gere o texto.");return;}
+  navigator.clipboard.writeText(texto).then(()=>alert("Texto copiado com sucesso."));
+}
+
+function abrirWhatsapp(){
+  const texto=document.getElementById("preview").innerText;
+  if(!texto){alert("Primeiro gere o texto.");return;}
+  window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
+}
+
+async function exportarPDF(){
+  gerarTexto();
+  const texto=document.getElementById("preview").innerText;
+  const{jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const data=document.getElementById("data").value;
+  pdf.setFontSize(16);pdf.text("DETALHAMENTO CHI",10,15);
+  pdf.setFontSize(10);pdf.text(`Data: ${data}`,10,22);
+  const textoPdf=texto.replace(/[\u{1F300}-\u{1FAFF}]/gu,'');
+  const linhas=pdf.splitTextToSize(textoPdf,180);
+  let y=30;
+  linhas.forEach(linha=>{if(y>280){pdf.addPage();y=20;}pdf.text(linha,10,y);y+=5;});
+  pdf.save(`CHI_${data}.pdf`);
+}
+
+/* ══════════════════════════════════════
+   APP RECURSO TÉCNICO
+══════════════════════════════════════ */
+function gerarTextoRecurso(){
+  let dataOriginal=document.getElementById("r_data").value;
+  let dataFormatada="";
+  if(dataOriginal){let p=dataOriginal.split("-");dataFormatada=p[2]+"-"+p[1]+"-"+p[0];}
+  const ocNumero=document.getElementById("r_oc").value;
+  const dataAtual=new Date();
+  const anoAtual=dataAtual.getFullYear();
+  const mesAtual=String(dataAtual.getMonth()+1).padStart(2,"0");
+  const texto=`🔵*NEOENERGIA PERNAMBUCO*🔵
+
+━━━━━━━━━━━━━━━━━━
+
+🛠️*MANUTENÇÃO UTEP NORTE*🛠️
+
+🚨*SOLICITAÇÃO DE RECURSO*🚨
+       🚨*TÉCNICO*🚨
+
+━━━━━━━━━━━━━━━━━━
+
+🏢 *UTD:* ${document.getElementById("r_utd").value}
+
+📅 *DATA CRIAÇÃO:* ${dataFormatada}
+
+📄 *Nº OCORRÊNCIA:* ${anoAtual}_${mesAtual}_${ocNumero}
+
+📊 *STATUS OC:* ${document.getElementById("r_status").value}
+
+📝 *Nº CI:* ${document.getElementById("r_ci").value}
+
+🚛 *RECURSO SOLICITADO:* ${document.getElementById("r_recurso").value}
+
+⚠️ *TIPO DE DEFEITO:* ${document.getElementById("r_defeito").value}
+
+🪪 *PLACA:* ${document.getElementById("r_placa").value}
+
+🪪 *BARRAMENTO:* ${document.getElementById("r_barramento").value}
+
+✅ *GLV:* ${document.getElementById("r_glv").value}
+
+⚡ *ALIMENTADOR:* ${document.getElementById("r_alimentador").value}
+
+🏙️ *MUNICÍPIO:* ${document.getElementById("r_municipio").value}
+
+📍 *LATITUDE:* ${document.getElementById("r_latitude").value}
+
+📍 *LONGITUDE:* ${document.getElementById("r_longitude").value}
+
+🧾 *Nº PES:* ${document.getElementById("r_pes").value}
+
+📋 *Nº SI:* ${document.getElementById("r_si").value}
+
+🗒️ *OBSERVAÇÃO:*
+${document.getElementById("r_obs").value}
+
+━━━━━━━━━━━━━━━━━━
+
+📦 *MATERIAIS NECESSÁRIOS*
+
+${document.getElementById("r_materiais").value}
+
+━━━━━━━━━━━━━━━━━━
+
+🔵 *NEOPE* 🔵
+⏩ *AVANÇA* ⏩⏩`;
+  document.getElementById("r_resultado").innerText=texto;
+}
+
+function copiarTextoRecurso(){
+  const texto=document.getElementById("r_resultado").innerText;
+  if(!texto){alert("Gere o texto primeiro.");return;}
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(texto).then(()=>alert("Texto copiado com sucesso!")).catch(()=>copiarFallback(texto));
+  }else{copiarFallback(texto);}
+}
+
+function copiarFallback(texto){
+  const ta=document.createElement("textarea");
+  ta.value=texto;document.body.appendChild(ta);ta.select();
+  document.execCommand("copy");document.body.removeChild(ta);alert("Copiado!");
+}
+
+function abrirWhatsAppRecurso(){
+  const texto=document.getElementById("r_resultado").innerText;
+  if(!texto){alert("Gere o texto primeiro.");return;}
+  window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+window.onload=()=>{
+  iniciarSistema();
+  popularStatusEdicao();
+  carregarDados();
+  if(!document.getElementById("data").value){
+    const hoje=new Date();
+    document.getElementById("data").value=hoje.getFullYear()+"-"+String(hoje.getMonth()+1).padStart(2,"0")+"-"+String(hoje.getDate()).padStart(2,"0");
+  }
+  if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js");}
+};
+
+document.addEventListener("input",()=>{atualizarKPIs();salvarDados(false);});
+document.addEventListener("change",()=>{atualizarKPIs();salvarDados(false);});
+</script>
+</body>
+</html>

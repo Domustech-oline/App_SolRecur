@@ -1,4 +1,4 @@
-const CACHE_NAME = 'utep-norte-v1';
+const CACHE_NAME = 'utep-norte-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -22,15 +22,32 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const req = event.request;
+  const aceitaHtml = req.headers.get('accept') && req.headers.get('accept').includes('text/html');
+
+  // Para a página do app (HTML): sempre tenta buscar a versão mais nova na rede.
+  // Só usa o cache se estiver sem internet.
+  if (req.mode === 'navigate' || aceitaHtml) {
+    event.respondWith(
+      fetch(req).then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+        return response;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Para os demais arquivos (ex.: biblioteca do PDF): cache primeiro, com fallback de rede.
   event.respondWith(
-    caches.match(event.request).then(cached => {
+    caches.match(req).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
+      return fetch(req).then(response => {
         if (!response || response.status !== 200 || response.type === 'opaque') {
           return response;
         }
         const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         return response;
       }).catch(() => cached);
     })
